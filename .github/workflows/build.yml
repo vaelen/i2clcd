@@ -8,10 +8,26 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            cc: gcc
+            packages: ""
+          - arch: arm64
+            cc: aarch64-linux-gnu-gcc
+            packages: gcc-aarch64-linux-gnu
 
     steps:
     - uses: actions/checkout@v4
-    - name: make
-      run: make
+
+    - name: Install cross-compiler
+      if: matrix.packages != ''
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.packages }}
+
+    - name: Build (${{ matrix.arch }})
+      run: make CC=${{ matrix.cc }}
